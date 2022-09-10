@@ -1,65 +1,53 @@
-#!/usr/bin/env python3
-"""
-A simple task manager.
-
-For the purposes of our exercise we store tasks in a file which we'll
-call tasks.csv (a CSV file). We'll talk more later about other ways to
-store state which are more robust.
-"""
 from tempfile import NamedTemporaryFile
 import csv
 import os
-
+import sys
 
 DONE = " V"
 
-
-def list():
+def list(stdout=sys.stdout, filename="tasks.csv"):
     """
     List the current known tasks.
     """
     with open("tasks.csv", newline= '') as tasks_file:
         reader = csv.reader(tasks_file)
+        
         for i in reader:
             if len(i) == 2:
                 name, completed = i
                 if not completed == 'False':
-                    print(f"{name}{DONE}")
+                    stdout.write(f"{name}{DONE}\n")
                 else:
-                    print(f"{name}{''}")
-    
+                    stdout.write(f"{name}\n")
 
-def create(name):
+
+def create(name, filename="tasks.csv"):
     """
     Create a new task.
     """
-    rows = []
-    with open("tasks.csv", "r") as tasks_file:
-        for row in csv.reader(tasks_file):
-            if len(row) > 0:  
-                rows.append(row[0])
 
     with open("tasks.csv", "a") as tasks_file:
         writer = csv.writer(tasks_file)
-        if name not in rows:
-            writer.writerow([name, False])
-        else:
-           print(f"{name}{' already exists in the list'}")
+        writer.writerow([name, False])
 
 
-def complete():
+
+def complete(complete=False, stdout=sys.stdout,filename='tasks.csv'):
     """
     Mark an existing task as completed.
     """
     with (
         open("tasks.csv") as tasks_file,
-        NamedTemporaryFile("w", delete=False) as new,
+        NamedTemporaryFile("w", delete=False, newline='') as new,
     ):
         reader = csv.reader(tasks_file)
         print("Current tasks:")
+        
+            
         for i in enumerate(reader,1):
-            if len(i) == 3:
+            if len(i) == 3 :
                 print(id, name, completed)
+    
 
         to_complete = int(input("task ID?> "))
         writer = csv.writer(new)
@@ -75,15 +63,14 @@ def complete():
                 else:
                     print(writer.writerow([name, completed]))
 
+    try:
+        os.remove("tasks.csv")  
+        os.rename(new.name, "tasks.csv")        
+    except:
+        os.rename(new.name, "tasks.csv")
 
-    os.rename(new.name ,"tasks.csv")
 
-
-operations = dict(
-    create=create,
-    complete=complete,
-    list=list,
-)
+operations = dict(create=create, complete=complete, list=list)
 
 
 def main():
@@ -100,5 +87,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
